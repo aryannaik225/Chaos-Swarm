@@ -1,0 +1,20 @@
+{
+  "name": "VIP Checkout Flow",
+  "steps": [
+    {
+      "method": "POST",
+      "url": "http://localhost:8080/api/login",
+      "payload": "{\"email\":\"bot@swarm.com\",\"password\":\"hacktheplanet\"}"
+    },
+    {
+      "method": "GET",
+      "url": "http://localhost:8080/api/cart",
+      "payload": ""
+    },
+    {
+      "method": "POST",
+      "url": "http://localhost:8080/api/checkout",
+      "payload": "{\"ticketId\":\"VIP-13\"}"
+    }
+  ]
+}
