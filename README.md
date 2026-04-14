@@ -51,7 +51,7 @@ echo "SWARM-your_token_here" > swarm-auth.txt
 ## 🎮 Usage Modes
 
 <div align="center">
-  <img src="https://github.com/aryannaik225/Chaos-Swarm/blob/main/images/bot_lifestyle.png" alt="Read JSON Scenario -> POST /login -> GET /cart -> Report to Atomic Histogram" width="550" />
+  <img src="https://github.com/aryannaik225/Chaos-Swarm/blob/main/images/bot_lifestyle.png" alt="Read JSON Scenario -> POST /login -> GET /cart -> Report to Atomic Histogram" width="650" />
   <p>The Stateful Journey</p>
 </div>
 
@@ -116,7 +116,7 @@ Upon completion, the engine aggregates data from all nodes to provide a granular
 3. **Latency Percentiles (P50, P95, P99):** Uses the atomic histograms to calculate the exact millisecond latency of the worst-case network requests.
 
 <div align="center">
-  <img src="https://github.com/aryannaik225/Chaos-Swarm/blob/main/images/terminal_output.png" alt="Terminal Output Showing P99 Latencies" width="600" />
+  <img src="https://github.com/aryannaik225/Chaos-Swarm/blob/main/images/terminal_output.png" alt="Terminal Output Showing P99 Latencies" width="800" />
 </div>
 
 ---
