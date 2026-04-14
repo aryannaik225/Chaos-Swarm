@@ -7,37 +7,33 @@ import (
 	"time"
 )
 
-// authMiddleware is a wrapper that checks if the request has a valid session cookie
-// before allowing it to reach the actual API route.
+// enforce session cookie
 func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("session_token")
 		if err != nil || cookie.Value != "authenticated_bot" {
-			// If there is no cookie, or the cookie is wrong, reject the request!
-			http.Error(w, `{"error": "Unauthorized - Missing Session"}`, http.StatusUnauthorized)
+			http.Error(w, `{"error": "Unauthorized"}`, http.StatusUnauthorized)
 			return
 		}
-		// Cookie is good, proceed to the route
 		next(w, r)
 	}
 }
 
 func main() {
-	// Serve the Tailwind frontend
+	// serve static assets
 	fs := http.FileServer(http.Dir("./cmd/target/static"))
 	http.Handle("/", fs)
 
-	// --- 1. THE LOGIN ROUTE (Issues the Cookie) ---
+	// mock login + set cookie
 	http.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 		
-		// Simulate password hashing delay
+		// fake hash delay
 		time.Sleep(100 * time.Millisecond)
 
-		// Set the stateful session cookie!
 		http.SetCookie(w, &http.Cookie{
 			Name:  "session_token",
 			Value: "authenticated_bot",
@@ -45,44 +41,46 @@ func main() {
 		})
 		
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"status": "success", "message": "Logged in successfully"}`))
+		w.Write([]byte(`{"status": "success", "message": "Logged in"}`))
 	})
 
-	// --- 2. THE CART ROUTE (Protected by Middleware) ---
+	// protected cart route
 	http.HandleFunc("/api/cart", authMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// Simulate a fast database read
+		// fake db read
 		time.Sleep(50 * time.Millisecond)
 		
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status": "success", "items": [{"id": "VIP-13", "qty": 1}]}`))
 	}))
 
-	// --- 3. THE CHECKOUT ROUTE (Protected + The 50-Connection Trap) ---
+	// checkout bottleneck sim (max 50 concurrent)
 	dbPool := make(chan struct{}, 50)
 
 	http.HandleFunc("/api/checkout", authMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		select {
 		case dbPool <- struct{}{}:
-			// SUCCESS: We got a connection!
-			defer func() { <-dbPool }() // Give token back
+			// got lock, release on exit
+			defer func() { <-dbPool }() 
 
-			time.Sleep(3 * time.Second) // The heavy DB lock trap
+			// slow db query trap
+			time.Sleep(3 * time.Second) 
+			
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"status": "success", "message": "Ticket secured!"}`))
+			w.Write([]byte(`{"status": "success", "message": "Ticket secured"}`))
 
 		default:
-			// CRASH: The pool is completely full.
+			// pool exhausted
 			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadGateway) // 502 Error
-			w.Write([]byte(`{"error": "Connection Refused. Server exhausted pool limits."}`))
+			w.WriteHeader(http.StatusBadGateway) 
+			w.Write([]byte(`{"error": "Connection Refused"}`))
 		}
 	}))
 
 	port := ":8080"
-	fmt.Printf("🎤 Taylor Swift Ticket Portal running on http://localhost%s\n", port)
-	fmt.Println("⚠️  Warning: Strict DB Connection Pool (Max 50) is ACTIVE.")
-	fmt.Println("🔐 Stateful Auth Routes (/api/login, /api/cart) are ACTIVE.")
+	fmt.Printf("[SERVER] Target API running on port %s\n", port)
+	fmt.Println("[CONFIG] DB Connection Pool Limit: 50")
+	fmt.Println("[CONFIG] Auth Routes Active")
 	
 	log.Fatal(http.ListenAndServe(port, nil))
 }
