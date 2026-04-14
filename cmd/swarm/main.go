@@ -256,7 +256,6 @@ func main() {
 	var finalReply SwarmReply
 	finalReply.StepFailures = make([]int32, len(activeScenario.Steps))
 
-	// local fallback for single terminal testing
 	if *runMode == "standalone" {
 		fmt.Printf("%s[INITIATING LOCAL SWARM]%s\n\n", colorCyan, colorReset)
 		args := SwarmArgs{TargetURL: *targetURL, TotalReqs: *totalRequests, TargetRPS: *targetRPS, ScenarioData: activeScenario}
@@ -336,7 +335,28 @@ func main() {
 	fmt.Printf("%sSuccessful:%s    %d\n", colorGreen, colorReset, finalReply.SuccessCount)
 	fmt.Printf("%sFailed:%s        %d\n\n", colorRed, colorReset, finalReply.FailCount)
 
-	fmt.Printf("[LATENCY PERCENTILES] (Full Journey)\n")
+	fmt.Printf("[STEP-BY-STEP FAILURE BREAKDOWN]\n")
+	for i, step := range activeScenario.Steps {
+		fails := finalReply.StepFailures[i]
+		if fails > 0 {
+			fmt.Printf("  [X] Step %d [%s %s]: %s%d failures%s\n", i+1, step.Method, step.URL, colorRed, fails, colorReset)
+		} else {
+			fmt.Printf("  [OK] Step %d [%s %s]: 0 failures\n", i+1, step.Method, step.URL)
+		}
+	}
+
+	fmt.Printf("\n[HTTP STATUS CODES]\n")
+	for code, count := range finalReply.StatusHistogram {
+		if count > 0 {
+			if code >= 200 && code < 300 {
+				fmt.Printf("  %s[%d]: %d%s\n", colorGreen, code, count, colorReset)
+			} else {
+				fmt.Printf("  %s[%d]: %d%s\n", colorYellow, code, count, colorReset)
+			}
+		}
+	}
+
+	fmt.Printf("\n[LATENCY PERCENTILES] (Full Journey)\n")
 	fmt.Printf("  P50 (Median):  %d ms\n", p50)
 	fmt.Printf("  P95:           %d ms\n", p95)
 	fmt.Printf("  P99:           %d ms\n", p99)
