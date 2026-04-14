@@ -115,6 +115,10 @@ Upon completion, the engine aggregates data from all nodes to provide a granular
 2. **HTTP Status Distribution:** Counts every 2xx, 4xx, and 5xx error.
 3. **Latency Percentiles (P50, P95, P99):** Uses the atomic histograms to calculate the exact millisecond latency of the worst-case network requests.
 
+<div align="center">
+  <img src="https://github.com/aryannaik225/Chaos-Swarm/blob/main/images/terminal_output.png" alt="Terminal Output Showing P99 Latencies" width="600" />
+</div>
+
 ---
 
 ## 📄 License
